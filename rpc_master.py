@@ -1,4 +1,6 @@
-import io,struct, rpc, time
+import struct
+import rpc
+import time
 import numpy as np
 
 RPC_OK = struct.pack("<I", 0)
@@ -54,15 +56,15 @@ def jpeg_image_snapshot(interface):
 
 def set_exposure(interface, time_ms):
     
-    status_result = call_and_check(interface, "rpc_set_exposure", struct.pack("<I", time_ms))
+    call_and_check(interface, "rpc_set_exposure", struct.pack("<I", time_ms))
     
     time.sleep(2)
 
 def set_framesize(interface, framesize):
-    status_result = call_and_check(interface, "rpc_set_framesize", framesize.encode())
+    call_and_check(interface, "rpc_set_framesize", framesize.encode())
     
 def set_pixelformat(interface, pixelformat):
-    status_result = call_and_check(interface, "rpc_set_pixelformat",  pixelformat.encode())
+    call_and_check(interface, "rpc_set_pixelformat",  pixelformat.encode())
 
 def read_fb_chunk(interface, offset, max_chunk_size, out, *, retries=5):
     
@@ -127,6 +129,8 @@ class Camara:
     def get_snapshot(self):
         img_specs = self.get_frame_buffer_call_back()
         return bytearray_to_img(*img_specs)
+
+
 
 
 
