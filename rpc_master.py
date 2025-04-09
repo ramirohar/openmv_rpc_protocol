@@ -1,5 +1,4 @@
 import io,struct, rpc, time
-from PIL import Image
 import numpy as np
 
 RPC_OK = struct.pack("<I", 0)
