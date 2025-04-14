@@ -10,3 +10,4 @@ version = "0.1.0"
 [dependencies]
 numpy = ">=2.2.4,<3"
 ipykernel = ">=6.29.5,<7"
+pyserial = ">=3.5,<4"

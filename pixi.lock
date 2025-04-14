@@ -51,6 +51,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/win-64/psutil-7.0.0-py313ha7868ed_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
       - conda: https://prefix.dev/conda-forge/noarch/pygments-2.19.1-pyhd8ed1ab_0.conda
+      - conda: https://prefix.dev/conda-forge/noarch/pyserial-3.5-pyhd8ed1ab_1.conda
       - conda: https://prefix.dev/conda-forge/win-64/python-3.13.2-h261c0b1_101_cp313.conda
       - conda: https://prefix.dev/conda-forge/noarch/python-dateutil-2.9.0.post0-pyhff2d567_1.conda
       - conda: https://prefix.dev/conda-forge/win-64/python_abi-3.13-6_cp313.conda
@@ -596,6 +597,15 @@ packages:
   license_family: BSD
   size: 888600
   timestamp: 1736243563082
+- conda: https://prefix.dev/conda-forge/noarch/pyserial-3.5-pyhd8ed1ab_1.conda
+  sha256: 48b51797fa1f5d8b2ed5d5f155a18993bb02616eef7a3b053a9125d7650bbe59
+  md5: 0127bf00a534e0c7b8075090f162bf82
+  depends:
+  - python >=3.9
+  license: BSD-3-Clause
+  license_family: BSD
+  size: 69380
+  timestamp: 1734140304034
 - conda: https://prefix.dev/conda-forge/win-64/python-3.13.2-h261c0b1_101_cp313.conda
   build_number: 101
   sha256: b6e7a6f314343926b5a236592272e5014edcda150e14d18d0fb9440d8a185c3f
