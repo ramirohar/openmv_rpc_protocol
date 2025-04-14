@@ -3,8 +3,9 @@ import time
 
 import omv
 import pyb
-import rpc
 import sensor
+
+from . import rpc
 
 sensor.reset()
 sensor.set_pixformat(sensor.GRAYSCALE)

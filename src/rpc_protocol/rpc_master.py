@@ -2,7 +2,8 @@ import struct
 import time
 
 import numpy as np
-import rpc
+
+from . import rpc
 
 RPC_OK = struct.pack("<I", 0)
 RPC_ERROR = struct.pack("<I", 1)

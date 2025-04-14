@@ -1,5 +1,5 @@
 [project]
-name = "openmv_rpc_protocol"
+name = "rpc_protocol"
 description = "Rpc protocol for OpenMV cameras"
 version = "0.1.0"
 authors = [{ name = "Ramiro Harguiteguy", email = "ramirohar@gmail.com" }]
@@ -7,7 +7,7 @@ readme = { file = "README.md", content-type = "text/markdown" }
 license = "MIT"
 classifiers = ["Programming Language :: Python :: 3"]
 requires-python = ">=3.7"
-dependencies = []
+dependencies = ["numpy", "pyserial"]
 
 [project.urls]
 homepage = "https://github.com/ramirohar/openmv_rpc_protocol"
@@ -108,3 +108,7 @@ python = "3.12.*"
 
 [tool.pixi.feature.py313.dependencies]
 python = "3.13.*"
+
+[tool.pixi.dependencies]
+numpy = ">=1.21.6,<3"
+pyserial = ">=3.5,<4"
