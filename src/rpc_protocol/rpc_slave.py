@@ -1,9 +1,10 @@
-import omv
-import rpc
-import sensor
 import struct
 import time
+
+import omv
 import pyb
+import rpc
+import sensor
 
 sensor.reset()
 sensor.set_pixformat(sensor.GRAYSCALE)
@@ -19,22 +20,28 @@ RPC_EMPTY_IMAGE = struct.pack("<I", 3)
 RPC_FAILED_SNAPSHOT = struct.pack("<I", 4)
 TRANSFER_BUFFER = None
 
+
 def set_exposure(time_ms):
     sensor.set_auto_exposure(False, exposure_us=int(time_ms * 1000))
+
 
 def set_pixelformat(pixel_format):
     sensor.set_pixformat(pixel_format)
 
+
 def set_framesize(frame_size):
     sensor.set_framesize(frame_size)
 
+
 def image_snapshot():
     img = sensor.snapshot()
-    #img.to_jpeg(quality=90)
+    # img.to_jpeg(quality=90)
     return img
 
-def draw_string(img,x,y,string):
-    img.draw_string(x,y,string)
+
+def draw_string(img, x, y, string):
+    img.draw_string(x, y, string)
+
 
 ######
 
@@ -46,8 +53,6 @@ def draw_string(img,x,y,string):
 #     except:
 
 
-
-
 def rpc_set_exposure(data):
     time_ms = struct.unpack("<I", data)[0]
     try:
@@ -55,6 +60,7 @@ def rpc_set_exposure(data):
         return RPC_OK
     except:
         return RPC_ERROR
+
 
 def rpc_set_pixelformat(data):
     try:
@@ -68,6 +74,7 @@ def rpc_set_pixelformat(data):
     except:
         return RPC_ERROR
 
+
 def rpc_set_framesize(data):
     try:
         framesize = eval(bytes(data).decode())
@@ -75,10 +82,11 @@ def rpc_set_framesize(data):
         return RPC_WRONG_ARGUMENTS
 
     try:
-         set_framesize(framesize)
-         return RPC_OK
+        set_framesize(framesize)
+        return RPC_OK
     except:
         return RPC_ERROR
+
 
 def rpc_image_snapshot(data):
     global TRANSFER_BUFFER
@@ -91,8 +99,8 @@ def rpc_image_snapshot(data):
     except:
         return RPC_FAILED_SNAPSHOT
 
-def rpc_read_fb_chunk(data):
 
+def rpc_read_fb_chunk(data):
     if TRANSFER_BUFFER is None:
         return RPC_EMPTY_IMAGE
 
@@ -111,11 +119,11 @@ def rpc_read_fb_chunk(data):
     #     return RPC_EMPTY_IMAGE
 
     try:
-        #buffer = fb.bytearray()
+        # buffer = fb.bytearray()
         buf = TRANSFER_BUFFER
 
         if offset + chunk_size > len(buf):
-            chunk = buf[offset :]
+            chunk = buf[offset:]
         else:
             chunk = buf[offset : offset + chunk_size]
     except:
@@ -123,14 +131,17 @@ def rpc_read_fb_chunk(data):
 
     return RPC_OK + chunk
 
-    #return memoryview(sensor.get_fb().bytearray())[offset : offset + size]
+    # return memoryview(sensor.get_fb().bytearray())[offset : offset + size]
+
 
 if False:
+
     def blink():
         pyb.LED(1).on()
         time.sleep_ms(10)
         pyb.LED(1).off()
         time.sleep_ms(10)
+
 
 if True:
     interface = rpc.rpc_usb_vcp_slave()
@@ -139,18 +150,16 @@ if True:
     interface.register_callback(rpc_set_exposure)
     interface.register_callback(rpc_image_snapshot)
     interface.register_callback(rpc_read_fb_chunk)
-    #interface.setup_loop_callback(blink)
+    # interface.setup_loop_callback(blink)
     interface.loop()
 
 else:
-
     clock = time.clock()
 
     while True:
         clock.tick()  # Update the FPS clock.
 
-        img_size =  image_snapshot()
+        img_size = image_snapshot()
 
         print(img_size)
         print(clock.fps())  # Note: OpenMV Cam runs about half as fast when connected
-
