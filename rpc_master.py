@@ -80,12 +80,12 @@ def read_fb_chunk(interface, offset, max_chunk_size, out, *, retries=5):
             assert offset+chunk_size <= len(out)
             
             out[offset:offset+chunk_size] = result # Write the image data.
-            
-            break
+            return True
         except Exception as ex:
             print(ex)
-    else:
-        print(f"Failed after {retries} retries")
+
+    print(f"Failed after {retries} retries")
+    return False        
 
         
 ###########
@@ -109,10 +109,12 @@ class Camara:
         size,*specs = image_snapshot(self.interface1)
         img = bytearray(size)
 
+        ok = True
         for offset in range(0, len(img), self.chunksize):
             print(f"Reading {self.chunksize + offset} bytes of {size}")
-            read_fb_chunk(self.interface1, offset, self.chunksize, img)
-        return img, *specs
+            ok = ok and read_fb_chunk(self.interface1, offset, self.chunksize, img)
+        return ok, img, *specs
+    
     
     def set_framsize(self, framesize_str):
         set_framesize(self.interface1, framesize_str)
@@ -125,10 +127,11 @@ class Camara:
     
     def set_chunksize(self, size):
         self.chunksize = size             
-    
+        
     def get_snapshot(self):
-        img_specs = self.get_frame_buffer_call_back()
-        return bytearray_to_img(*img_specs)
+        ok, *img_specs = self.get_frame_buffer_call_back()
+        return ok, bytearray_to_img(*img_specs)
+
 
 
 
