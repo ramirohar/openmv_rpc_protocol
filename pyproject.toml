@@ -1,0 +1,110 @@
+[project]
+name = "openmv_rpc_protocol"
+description = "Rpc protocol for OpenMV cameras"
+version = "0.1.0"
+authors = [{ name = "Ramiro Harguiteguy", email = "ramirohar@gmail.com" }]
+readme = { file = "README.md", content-type = "text/markdown" }
+license = "MIT"
+classifiers = ["Programming Language :: Python :: 3"]
+requires-python = ">=3.7"
+dependencies = []
+
+[project.urls]
+homepage = "https://github.com/ramirohar/openmv_rpc_protocol"
+issues = "https://github.com/ramirohar/openmv_rpc_protocol/issues"
+changelog = "https://github.com/ramirohar/openmv_rpc_protocol/blob/main/CHANGELOG.md"
+documentation = "https://ramirohar.github.io/openmv_rpc_protocol"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.pyright]
+typeCheckingMode = "standard"
+venv = "default"
+venvPath = ".pixi/envs/"
+
+[tool.pixi.project]
+channels = ["https://repo.prefix.dev/conda-forge"]
+platforms = ['linux-64', 'win-64']
+
+
+[tool.pixi.environments]
+default = { features = ["test", "py37"] }
+lint = { features = ["lint"], no-default-feature = true }
+build = { features = ["build"], no-default-feature = true }
+test-py37 = ["test", "py37"]
+test-py38 = ["test", "py38"]
+test-py39 = ["test", "py39"]
+test-py310 = ["test", "py310"]
+test-py311 = ["test", "py311"]
+test-py312 = ["test", "py312"]
+test-py313 = ["test", "py313"]
+
+[tool.pixi.feature.lint.dependencies]
+pre-commit = "*"
+pre-commit-hooks = "*"
+taplo = "*"
+ruff = "*"
+mdformat = "*"
+mdformat-ruff = "*"
+pyright = "*"
+
+[tool.pixi.feature.lint.tasks]
+pre-commit-install = "pre-commit install"
+lint-staged = "pre-commit run"
+lint-all = "pre-commit run --all-files"
+
+[tool.pixi.feature.build.dependencies]
+uv = "*"
+python = "*" # required by mdremotifier
+
+[tool.pixi.feature.build.pypi-dependencies]
+mdremotifier = "*"
+
+[tool.pixi.feature.build.tasks]
+build = { cmd = "uv build", depends-on = ["remotify"] }
+publish = "uv publish"
+remotify = """mdremotifier -i README.md -o README.md
+--url-prefix https://github.com/ramirohar/openmv_rpc_protocol/blob/main
+--img-url-prefix https://raw.githubusercontent.com/ramirohar/openmv_rpc_protocol/refs/heads/main/
+"""
+
+[tool.pixi.feature.test.dependencies]
+pytest = "*"
+
+[tool.pixi.feature.test.pypi-dependencies]
+pytest-readme = "*"
+
+[tool.pixi.feature.test.tasks]
+test = "pytest --doctest-modules"
+
+[tool.pixi.feature.py37.dependencies]
+python = "3.7.*"
+
+[tool.pixi.feature.py38.dependencies]
+python = "3.8.*"
+
+[tool.pixi.feature.py39.dependencies]
+python = "3.9.*"
+
+[tool.pixi.feature.py310.dependencies]
+python = "3.10.*"
+
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"

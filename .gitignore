@@ -1,4 +1,16 @@
+# ignore all hidden files
 .*
-# pixi environments
-.pixi
-*.egg-info
+# except
+!.gitignore
+!.gitattributes
+!.github/
+!.pre-commit-config.yaml
+!.copier-answers.yml
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+
+# pytest-readme
+test_readme.py
