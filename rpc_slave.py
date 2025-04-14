@@ -17,7 +17,7 @@ RPC_ERROR = struct.pack("<I", 1)
 RPC_WRONG_ARGUMENTS = struct.pack("<I", 2)
 RPC_EMPTY_IMAGE = struct.pack("<I", 3)
 RPC_FAILED_SNAPSHOT = struct.pack("<I", 4)
-
+TRANSFER_BUFFER = None
 
 def set_exposure(time_ms):
     sensor.set_auto_exposure(False, exposure_us=int(time_ms * 1000))
@@ -28,7 +28,7 @@ def set_pixelformat(pixel_format):
 def set_framesize(frame_size):
     sensor.set_framesize(frame_size)
 
-def jpeg_image_snapshot():
+def image_snapshot():
     img = sensor.snapshot()
     #img.to_jpeg(quality=90)
     return img
@@ -80,11 +80,11 @@ def rpc_set_framesize(data):
     except:
         return RPC_ERROR
 
-def rpc_jpeg_image_snapshot(data):
+def rpc_image_snapshot(data):
     global TRANSFER_BUFFER
     try:
         TRANSFER_BUFFER = None
-        img = jpeg_image_snapshot()
+        img = image_snapshot()
         TRANSFER_BUFFER = memoryview(img.bytearray())
         return RPC_OK + struct.pack("<II", img.height(), img.width())
 
@@ -125,20 +125,21 @@ def rpc_read_fb_chunk(data):
 
     #return memoryview(sensor.get_fb().bytearray())[offset : offset + size]
 
-def blink():
-    pyb.LED(1).on()
-    time.sleep_ms(10)
-    pyb.LED(1).off()
-    time.sleep_ms(10)
+if False:
+    def blink():
+        pyb.LED(1).on()
+        time.sleep_ms(10)
+        pyb.LED(1).off()
+        time.sleep_ms(10)
 
 if True:
-    interface = rpc.rpc_usb_vcp_slave(recv_timeout=10000, send_timeout=10000)
+    interface = rpc.rpc_usb_vcp_slave()
     interface.register_callback(rpc_set_pixelformat)
     interface.register_callback(rpc_set_framesize)
     interface.register_callback(rpc_set_exposure)
-    interface.register_callback(rpc_jpeg_image_snapshot)
+    interface.register_callback(rpc_image_snapshot)
     interface.register_callback(rpc_read_fb_chunk)
-    interface.setup_loop_callback(blink)
+    #interface.setup_loop_callback(blink)
     interface.loop()
 
 else:
@@ -148,9 +149,8 @@ else:
     while True:
         clock.tick()  # Update the FPS clock.
 
-        img_size =  jpeg_image_snapshot()
+        img_size =  image_snapshot()
 
         print(img_size)
         print(clock.fps())  # Note: OpenMV Cam runs about half as fast when connected
-
 

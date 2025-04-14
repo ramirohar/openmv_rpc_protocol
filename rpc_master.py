@@ -47,8 +47,8 @@ def call_and_check(interface, *args, **kwargs):
 #####################
 
 
-def jpeg_image_snapshot(interface):
-    result = call_and_check(interface, "rpc_jpeg_image_snapshot")
+def image_snapshot(interface):
+    result = call_and_check(interface, "rpc_image_snapshot")
     
     height, width = struct.unpack("<II", result)    
     size = height * width  
@@ -106,7 +106,7 @@ class Camara:
             
     def get_frame_buffer_call_back(self):
 
-        size,*specs = jpeg_image_snapshot(self.interface1)
+        size,*specs = image_snapshot(self.interface1)
         img = bytearray(size)
 
         for offset in range(0, len(img), self.chunksize):
