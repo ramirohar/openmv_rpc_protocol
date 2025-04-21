@@ -35,7 +35,6 @@ def bytearray_to_img(arr, height, width):
 def check_status(result):
     if result is None:
         raise Exception("Return message is empty")
-
     (status,) = struct.unpack("<I", result[:4])
 
     if status != 0:
@@ -59,6 +58,10 @@ def image_snapshot(interface):
     height, width = struct.unpack("<II", result)
     size = height * width
     return size, height, width
+
+
+def image_find_blobs(interface):
+    call_and_check(interface, "rpc_image_find_blobs")
 
 
 def set_exposure(interface, time_ms):
@@ -117,15 +120,24 @@ class Camara:
 
         time.sleep(2)
 
-    def get_frame_buffer_call_back(self):
-        size, *specs = image_snapshot(self.interface1)
+    def get_frame_buffer_call_back(self, size):
         img = bytearray(size)
-
         ok = True
         for offset in range(0, len(img), self.chunksize):
             print(f"Reading {self.chunksize + offset} bytes of {size}")
             ok = ok and read_fb_chunk(self.interface1, offset, self.chunksize, img)
-        return ok, img, *specs
+        return ok, img
+
+    def get_snapshot(self):
+        size, *specs = image_snapshot(self.interface1)
+        ok, img = self.get_frame_buffer_call_back(size)
+        return ok, bytearray_to_img(img, *specs)
+
+    def find_blobs(self):
+        size, *specs = image_snapshot(self.interface1)
+        image_find_blobs(self.interface1)
+        ok, img = self.get_frame_buffer_call_back(size)
+        return ok, bytearray_to_img(img, *specs)
 
     def set_framsize(self, framesize_str):
         set_framesize(self.interface1, framesize_str)
@@ -138,7 +150,3 @@ class Camara:
 
     def set_chunksize(self, size):
         self.chunksize = size
-
-    def get_snapshot(self):
-        ok, *img_specs = self.get_frame_buffer_call_back()
-        return ok, bytearray_to_img(*img_specs)

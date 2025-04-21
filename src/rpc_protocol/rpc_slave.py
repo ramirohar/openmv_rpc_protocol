@@ -5,21 +5,17 @@ import omv
 import pyb
 import sensor
 
-from . import rpc
-
 sensor.reset()
 sensor.set_pixformat(sensor.GRAYSCALE)
 sensor.set_framesize(sensor.VGA)
 sensor.skip_frames(time=2000)
 sensor.set_auto_gain(True)
-omv.disable_fb(True)
 
 RPC_OK = struct.pack("<I", 0)
 RPC_ERROR = struct.pack("<I", 1)
 RPC_WRONG_ARGUMENTS = struct.pack("<I", 2)
 RPC_EMPTY_IMAGE = struct.pack("<I", 3)
 RPC_FAILED_SNAPSHOT = struct.pack("<I", 4)
-TRANSFER_BUFFER = None
 
 
 def set_exposure(time_ms):
@@ -42,6 +38,18 @@ def image_snapshot():
 
 def draw_string(img, x, y, string):
     img.draw_string(x, y, string)
+
+
+def image_find_blobs(img):
+    stats = img.get_statistics()
+    mean, std = stats[0], stats[3]
+
+    blobs = img.find_blobs([(mean - 4 * std, mean + 4 * std)], invert=True)
+    for blob in blobs:
+        img.draw_rectangle(blob.rect(), color=0)
+        img.draw_cross(blob.cx(), blob.cy(), color=0)
+
+    return len(blobs) != 0
 
 
 ######
@@ -89,39 +97,45 @@ def rpc_set_framesize(data):
         return RPC_ERROR
 
 
+###
+
+
 def rpc_image_snapshot(data):
-    global TRANSFER_BUFFER
     try:
-        TRANSFER_BUFFER = None
         img = image_snapshot()
-        TRANSFER_BUFFER = memoryview(img.bytearray())
         return RPC_OK + struct.pack("<II", img.height(), img.width())
 
     except:
         return RPC_FAILED_SNAPSHOT
 
 
-def rpc_read_fb_chunk(data):
-    if TRANSFER_BUFFER is None:
-        return RPC_EMPTY_IMAGE
+def rpc_image_find_blobs(data):
+    try:
+        img = sensor.get_fb()
+        image_find_blobs(img)
+        return RPC_OK
+    except:
+        return RPC_ERROR
 
+
+def rpc_read_fb_chunk(data):
     try:
         offset, chunk_size = struct.unpack("<II", data)
     except:
         return RPC_WRONG_ARGUMENTS
 
-    # try:
-    #     fb = TRANSFER_BUFFER
-    #     # fb = sensor.get_fb()
-    # except:
-    #     return RPC_EMPTY_IMAGE
+    try:
+        # fb = TRANSFER_BUFFER
+        fb = sensor.get_fb()
+    except:
+        return RPC_EMPTY_IMAGE
 
-    # if fb is None :
-    #     return RPC_EMPTY_IMAGE
+    if fb is None:
+        return RPC_EMPTY_IMAGE
 
     try:
-        # buffer = fb.bytearray()
-        buf = TRANSFER_BUFFER
+        buf = fb.bytearray()
+        # buf = TRANSFER_BUFFER
 
         if offset + chunk_size > len(buf):
             chunk = buf[offset:]
@@ -135,32 +149,34 @@ def rpc_read_fb_chunk(data):
     # return memoryview(sensor.get_fb().bytearray())[offset : offset + size]
 
 
+def blink():
+    for i in [1, 2, 3]:
+        pyb.LED(i).on()
+        time.sleep(0.5)
+        pyb.LED(i).off()
+
+
 if False:
+    import rpc
 
-    def blink():
-        pyb.LED(1).on()
-        time.sleep_ms(10)
-        pyb.LED(1).off()
-        time.sleep_ms(10)
+    omv.disable_fb(True)
 
-
-if True:
     interface = rpc.rpc_usb_vcp_slave()
+
+    blink()
+
     interface.register_callback(rpc_set_pixelformat)
     interface.register_callback(rpc_set_framesize)
     interface.register_callback(rpc_set_exposure)
     interface.register_callback(rpc_image_snapshot)
+    interface.register_callback(rpc_image_find_blobs)
     interface.register_callback(rpc_read_fb_chunk)
-    # interface.setup_loop_callback(blink)
     interface.loop()
 
 else:
-    clock = time.clock()
+    from pyb import Pin
 
+    pin = Pin("P1", Pin.OUT_PP, Pin.PULL_NONE)
     while True:
-        clock.tick()  # Update the FPS clock.
-
-        img_size = image_snapshot()
-
-        print(img_size)
-        print(clock.fps())  # Note: OpenMV Cam runs about half as fast when connected
+        img = sensor.snapshot()
+        print(image_find_blobs(img))
